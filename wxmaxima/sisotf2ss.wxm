@@ -1,0 +1,55 @@
+/* [wxMaxima batch file version 1] [ DO NOT EDIT BY HAND! ]*/
+/* [ Created with wxMaxima version 20.06.6 ] */
+/* [wxMaxima: input   start ] */
+load("utilities.wxm");
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: comment start ]
+Convert a transfer function to controllable canonical form
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+hs:y(s)/u(s)=(b0+b1*s+b2*s*s+b3*s*s*s)/(a0+a1*s+a2*s*s+a3*s*s*s);
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+hz:rhs(hs) * 'x(s)/x(s) ;
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+nn:num(lhs(hs))=num(hz);
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+nd:denom(lhs(hs))=denom(hz);
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+ht:[ils(nn),ils(nd)],nouns;
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+fa:subst([diff(x(t),t,3)=x3,diff(x(t),t,2)=x2,diff(x(t),t,1)=x1,x(t)=x0],ht);
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+fs:solve(fa,[x3,y(t)])[1];
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+solve(at(fa,[x1=0,x2=0,x3=0]),[x0,u(t)]);
+/* [wxMaxima: input   end   ] */
+
+
+
+/* Old versions of Maxima abort on loading files that end in a comment. */
+"Created with wxMaxima 20.06.6"$

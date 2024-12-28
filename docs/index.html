@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="" lang="">
+  <head>
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,
+      initial-scale=1.0, user-scalable=yes">
+    <title>readme</title>
+    <script>
+	MathJax = {
+		loader: {load: ['input/asciimath']},
+	};
+	</script>
+    <script src="https://cdn.jsdelivr.net/npm/mathjax@3.0.1/es5/tex-chtml-full.js" type="text/javascript"></script>
+	<link id="theme_css" rel='stylesheet' href="screen.css"/>
+	<style>
+	.math {
+		font-size: 200%; 
+		text-align: center;
+		text-align: center;
+	}
+	</style>
+  </head>
+  <body>
+
+      <h1 id="pid">cmon-pid</h1>
+      <p id="pragma-line-2">A implementation of several common PID controller transfer functions in C++, header only, without dependencies.</p>
+      <ul id="pragma-line-4">
+          <li id="pragma-line-4">
+              <p id="pragma-line-4">Realized PID transfer functions</p>
+              <ul id="pragma-line-5">
+                  <li id="pragma-line-5"><a href="index.html#SeriesPID">Serial</a></li>
+                  <li id="pragma-line-6"><a href="index.html#ParallelPID">Parallel</a></li>
+                  <li id="pragma-line-7"><a href="index.html#NStdPID">N-Standard</a></li>
+                  <li id="pragma-line-8"><a href="index.html#StdPID">Standard</a></li>
+              </ul>
+          </li>
+          <li id="pragma-line-10">
+              <p id="pragma-line-10"><a href="index.html#TFSolutions">Numerical solution</a></p>
+              <ul id="pragma-line-11">
+                  <li id="pragma-line-11">Backward euler</li>
+                  <li id="pragma-line-12">Bilinear / Tustin</li>
+              </ul>
+          </li>
+          <li id="pragma-line-14">
+              <p id="pragma-line-14">Anti-windup</p>
+              <ul id="pragma-line-15">
+                  <li id="pragma-line-16"><a href="index.html#SimClamping">Clamping</a></li>
+                  <li id="pragma-line-15"><a href="index.html#SimBackcalc">Back-calculation</a></li>
+              </ul>
+          </li>
+          <li id="pragma-line-18">
+              <p id="pragma-line-18">Initialization</p>
+              <ul id="pragma-line-19">
+                  <li id="pragma-line-19">Steady State</li>
+                  <li id="pragma-line-20">Bump-less parameter change</li>
+                  <li id="pragma-line-21">Sampling pointss</li>
+              </ul>
+          </li>
+          <li id="pragma-line-23">
+              <p id="pragma-line-23"><a href="index.html#Simulation">Simulation</a> of a pid in closed loop with a second order test system</p>
+          </li>
+      </ul>
+
+      <h2>PID law</h2>
+      The PIDs function can be described by the PID law which is a linear ordinary differential equation (ODE):
+      <p class="math">`u(t)=K_p*e(t)+K_i*int_0^t e(x)dx+K_d*(d e(t))/(dt)`<p>
+          By Laplace transformation we get:
+      <p class="math">`u(s)=K_p*e(s)+(K_i)/s * e(s)+K_d*s*e(s)`<p>
+          Dividing by e(s) gives us the transfer function which is just the ratio of the output to the input signal.
+          Transfer functions of linear ODEs are always rational which makes them handy for manipulating. You can express things like
+          concatenation, addition or feedback by simple algebraic operations. The transfer function of a PID in canonical rational form is:
+      <p class="math">`(u(s))/(e(s))=(K_d*s^2+K_p*s+K_i)/s`<p>
+          This transfer function is not proper meaning it is unbounded when the frequencies approach infinity. This is
+          a problem when we want to realize it in some physical form. The usual remedy is to add another pole which acts as a
+          low pass filter to limit the bandwidth. A realizable transfer function of a PID would be:
+      <p class="math">`(u(s))/(e(s))=(K_d*s^2+K_p*s+K_i)/s * 1/(Tf*s+1)`<p>
+          The filter time constant Tf is usually determined by the noise level and required bandwidth. But it cannot be arbitrarily low. A minimum of
+          about 20% of the sampling time is necessary to avoid problems with the numerical integration of the ODE. Obviously when you want more bandwidth
+          you also need a higher sampling frequency.
+
+          <h2> PID Transfer Functions</h2>
+          There are many variations of transfer functions for PIDs depending on the way you specify the tuning parameters.
+
+          <h3 id="SeriesPID">Series PID</h3>
+          The series PID is a combination of a PI followed by an PD controller and has the transfer function:
+      <p class="math"> `(u(s))/(e(s))=G*(Ti*s+1)/(Ti*s)*(Td*s+1)*1/(Tf*s+1)` </p>
+      Its zeros are simply the reciprocal of the time constants:
+      <p class="math"> `s_0=-1/(Ti),s_0=-1/(Td)` </p>
+      <p>
+          There is no difference between the integration and differential time parameter except for the gain. If you adjust for gain
+          Ti and Td are exchangeable. The disadvantage of this function is that you cannot have conjugate complex zeros without
+          using complex arithmetic which this implementation does not support.
+      <p>
+      <p>Skogestads IMC tuning rules can be applied to this controller.</p>
+      <a href="https://www.researchgate.net/publication/222297633_Simple_Analytic_Rules_for_Model_Reduction_and_PID_Controller_Tuning">
+          Skogestad, Sigurd. (2004). Simple Analytic Rules for Model Reduction and PID Controller Tuning. Journal of Process Control. 13. 291-309. 10.1016/S0959-1524(02)00062-8.
+      </a>
+
+      <h3 id="ParallelPID">
+          Parallel PID
+      </h3>
+      The parallel PID just uses the polynomial coefficients:
+      <p class="math">`(u(s))/(e(s))=(Kp+(Ki)/s+Kd*s)*1/(Tf*s+1)`</p>
+      The parameters are not very meaningful to describe the dynamics but it is the most versatile PID since it can represent all
+      variations PID, PI, PD, ID, P, I and D controllers. Also it can express conjugate complex zeros with real valued parameters:
+      <p class="math">`s_0=-(sqrt(Kp^2-4*Kd*Ki)+Kp)/(2*Kd),s_0=(sqrt(Kp^2-4*Kd*Ki)-Kp)/(2*Kd)`<p>
+          The site <a href="https://pidtuner.github.io/">pidtuner</a> can compute tuning parameters for it.
+
+          <h3 id="NStdPID">N-Standard PID</h3>
+          The standard PID is a modification of the parallel PID with the gain factored and with differential and integral terms that
+          have parameters with time units.
+      <p class="math">`(u(s))/(e(s))=Kp*(1+1/(Ti*s)+(Td*s)/((Td)/N*s+1))`</p>
+      The low pass filter is applied only to the differential term and its time constant is given as `Tf = (Td)/N`. This is somewhat confusing
+      since the differential time parameter and noise filtering are usually unrelated. Also the zeros depend on N in a complicated way:
+      <p class="math">`s_0=-(sqrt(N^2*Ti^2+(-4*N^2-2*N)*Td*Ti+Td^2)+N*Ti+Td)/((2*N+2)*Td*Ti)`</p>
+      <p class="math">`s_0=(sqrt(N^2*Ti^2+(-4*N^2-2*N)*Td*Ti+Td^2)-N*Ti-Td)/((2*N+2)*Td*Ti)`</p>
+      Nonetheless this PID is common probably because it is supported by
+      <a href="https://www.mathworks.com/help/control/ug/proportional-integral-derivative-pid-controllers.html">Matlab</a>
+      where you also can find a function for tuning it.
+
+      <h3 id="StdPID">Standard PID</h3>
+      This PID is like the N-Standard PID except that the low pass filter is applied to all terms.
+      <p class="math">`(u(s))/(e(s))=Kp*(1+1/(Ti*s)+Td*s)*(1/(Tf*s+1))`</p>
+      The zeros do not depend on the filter parameter:
+      <p class="math">`s_0=-(sqrt(Ti^2-4*Td*Ti)+Ti)/(2*Td*Ti),s_0=(sqrt(Ti^2-4*Td*Ti)-Ti)/(2*Td*Ti)`</p>
+      <p>There are lots of tuning methods for it.</p>
+      <a href="https://www.semanticscholar.org/paper/Advanced-Methods-of-PID-Controller-Tuning-for-Bucz-Koz%C3%A1kov%C3%A1/18f447bd8c4f2966207492a885b8ebce87612183">
+          Advanced Methods of PID Controller Tuning for Specified Performance.
+      </a>
+
+      <h2 id="TFSolutions">Solutions of the Transfer Functions.</h2>
+
+      <p>Solutions for u(t) with the sampled function e(t) are approximated by backward Euler and Tustin integration.</p>
+
+      <table>
+          <tr>
+              <td>Series PID</td>
+              <td><a href="serialPID_bwe.html">Backward Euler</a></td>
+              <td><a href="serialPID_bil.html">Bilinear/Tustin</a></td>
+          </tr>
+          <tr>
+              <td>Parallel PID</td>
+              <td><a href="parallelPID_bwe.html">Backward Euler</a></td>
+              <td><a href="parallelPID_bil.html">Bilinear/Tustin</a></td>
+          </tr>
+          <tr>
+              <td>N-Standard PID</td>
+              <td><a href="N-standardPID_bwe.html">Backward Euler</a></td>
+              <td><a href="N-standardPID_bil.html">Bilinear/Tustin</a></td>
+          </tr>
+          <tr>
+              <td>Standard PID</td>
+              <td><a href="standardPID_bwe.html">Backward Euler</a></td>
+              <td><a href="standardPID_bil.html">Bilinear/Tustin</a></td>
+          </tr>
+      </table>
+
+
+      <h2 id="Simulation">Simulation Tests</h2>
+      The simulation code can be compiled with Visual Studio 2019. The result is stored as comma separated value file which can be
+      processed and plotted by several programs like Gnuplot, R, Excel, KST2 or the Openmodellica Editor OME. The images you see here
+      were created with KST2. The mkplots.ps1 script will do this when you install KST2 parallel to this directory.
+      Simulations are done with a continuous test system in closed loop with the PID. The test system is integrated by 4th order Runge
+      Kutta with a small step size while the PID uses it's own discrete integration at the given clock rate.
+      <h3>Test system transfer function</h3>
+      <p>The test system is second order with two time constants 3 and 10 seconds and a DC gain of 1.<p>
+      <p class="math"> `H:(y(s))/(u(s))=1/((3*s+1)*(10*s+1))` </p>
+
+      <h3>PID controller settings</h3>
+      We are choosing the PID parameters so that the poles of the test system will be compensated and set the gain for
+      a closed loop rise time of 1 second. With the serial PID this is easy:
+      <p class="math"> `K:(u(s))/(e(s))=G*(Ti*s+1)/(Ti*s)*(Td*s+1)*1/(Tf*s+1)` </p>
+      <p class="math">`Ti=10, Td=3, G = 10`</math></p>
+      This is a setting you likely do not want in a real world application. While the tracking performance is excellent, disturbance
+      rejection is rather sluggish due to the long integration times. Also making a slow system respond that fast requires to kick it
+      really hard. The kick is not a fault of the controller but a result of the target specification.
+
+      <h3>Closed Loop Reference Signal</h3>
+      <p>The continuous closed loop system has the transfer function:</p>
+      <p class="math"> `C:(y(s))/(r(s))=(K*H)/(1+K*H)` </p>
+      <p>
+          where H is the test system and K the continuous PID controller. r(s) is the set-point function.
+          The y(s) signal of this system is plotted as the green curve for reference.
+      </p>
+
+      <h3>Plotted signals</h3>
+
+      <table>
+          <tr>
+              <th>Signal</th>
+              <th>Value</th>
+              <th>Condition</th>
+          </tr>
+          <tr>
+              <td>setpoint</td>
+              <td>r(t)</td>
+              <td></td>
+          </tr>
+          <tr>
+              <td>u_bwe</td>
+              <td>u(t) of K with backward euler integration</td>
+              <td>e(t) = setpoint - y_bwe</td>
+          </tr>
+          <tr>
+              <td>u_bil</td>
+              <td>u(t) of K with bilinear integration</td>
+              <td>e(t) = setpoint - y_bil</td>
+          </tr>
+          <td>y_bwe</td>
+          <td>y(t) of H</td>
+          <td>u(t) = u_bwe</td>
+          </tr>
+          </tr>
+          <td>y_bil</td>
+          <td>y(t) of H</td>
+          <td>u(t) = u_bil</td>
+          </tr>
+          </tr>
+          <td>continuous</td>
+          <td>y(t) of C</td>
+          <td>r(t) = setpoint</td>
+          </tr>
+          </tr>
+          <td>openloop</td>
+          <td>y(t) of H</td>
+          <td>u(t) = setpoint</td>
+          </tr>
+      </table>
+
+      <h3>Fast Sampling</h3>
+      The sampling time and filter time constant are a 10th of the closed loop response time. `Tf=0.1, h=0.1`. With
+      ample sampling rate and bandwidth the performance of the discrete and continuous controllers are similar.
+      <p><img src="images/sim_fast_sample.png" width=100%></p>
+      <h3>Slow Sampling</h3>
+      With a sampling rate of half the closed loop response time we see some difference between the backward Euler
+      and bilinear/tustin integration. `h=0.5`
+      <p><img src="images/sim_slow_sample.png" width=100%></p>
+
+      <h3>High bandwidth</h3>
+      This happens when the sampling rate is too low for the bandwidth. `h=0.1, Tf=0.0001`
+      <p><img src="images/sim_high_bandwidth.png" width=100%></p>
+
+      <h3>Low Bandwidth</h3>
+      A low pass filter of half the response time has not much effect on the performance but can reduce the kick. `Tf=0.5`
+      <p><img src="images/sim_low_bandwidth.png" width=100%></p>
+
+      <h3>Disturbance Rejection</h3>
+      Disturbance rejection is slow but they are damped by the system and may not be problem under normal conditions. `Tf=0.1`
+      <p><img src="images/sim_disturbance_rejection.png" width=100%></p>
+
+      <h3 id="SimClamping">Clamping</h3>
+      <p>
+          Even with reduced bandwidth the actuator output is almost 50 times larger than the final value. Most physical
+          system will not have such a large range. The output can be limited by clamping. Here we use `u(t)<=10, Tf=0.1`
+      </p>
+      <p>
+          While this works reasonably well manipulating the output is akin to disturbance and if we have a system with
+          slow disturbance rejection like this recovery times will be quite long.
+      </p>
+      <p><img src="images/sim_clamping.png" width=100%></p>
+
+      <h3 id="SimBackcalc">Back-calculation</h3>
+      <p>
+          Back-calculation limits the output value like clamping but can be tuned with a parameter, here `Tw=Ti`. But it has
+          the same problem with slow disturbance rejection.
+      </p>
+      <p><img src="images/sim_backcalc_ti.png" width=100%></p>
+      <h3>Disturbance with `Ti=2`</h3>
+      To improve the disturbance rejection the integration time can be reduced to 2.
+      <p><img src="images/sim_ti2_disturbance.png" width=100%></p>
+
+      <h3>Clamping with `Ti=2`</h3>
+      This also improves the recovery after the output has been clamped.
+      <p><img src="images/sim_ti2_clamping.png" width=100%></p>
+
+
+      <h3>Step response with `Ti=2`</h3>
+      Tracking performance is reduced though.
+      <p><img src="images/sim_ti2.png" width=100%></p>
+
+  </body>
+</html>

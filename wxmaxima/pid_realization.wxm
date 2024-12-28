@@ -1,0 +1,287 @@
+/* [wxMaxima batch file version 1] [ DO NOT EDIT BY HAND! ]*/
+/* [ Created with wxMaxima version 20.06.6 ] */
+/* [wxMaxima: input   start ] */
+load("utilities.wxm");
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+simp:false;
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: section start ]
+Definintion
+   [wxMaxima: section end   ] */
+
+
+/* [wxMaxima: comment start ]
+The PID transfer function. e(s)=r(s)-y(s) is the input error signal with r(s) the setpoint and y(s) the sensor readings. u(s) is the output to the actuator.
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+tf:u(s)/e(s)=G*((Ti*s+1)/(Ti*s)*(Td*s+1)*(1/(Tf*s+1)));
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+tf:u(s)/e(s)=(Kp+Ki/s+Kd*s) * (1/(Tf*s+1));
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+tf:u(s)/e(s)=Kp*(1+1/(Ti*s)+s*Td/((Td/N)*s+1));
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+tf:u(s)/e(s)=Kp*(1+1/(Ti*s)+s*Td)*(1/(Tf*s+1));
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: comment start ]
+Select integration method: backward_euler or bilinear
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+num_integrate:backward_euler;
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+num_integrate:bilinear;
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+simp:true;
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+num_integrate(diff(y(t),t) = f(y(t),t));
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: section start ]
+Realization
+   [wxMaxima: section end   ] */
+
+
+/* [wxMaxima: comment start ]
+The 2nd order differential equation is split into 1st order equations by substituting state variables.
+Partial fractions allow the separation of the integrator and the low pass filter into distinct states.
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+tffr:partfrac(tf * denom(lhs(tf)),s);
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: comment start ]
+The pole is assigned to the D(s) variable.
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+tfD:D(s)=part(tffr,2,1);
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: comment start ]
+The integrator is assigned to the I(s) variable.
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+tfI:I(s)=part(tffr,2,2);
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: comment start ]
+The states are substituted into the output equation. It contains no further state.
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+tfY:subst([reverse(tfD),reverse(tfI)],tffr);
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: comment start ]
+Inverse laplace transformation to get ordinary differential equations.
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+od:map(ilp,[tfD,tfI,tfY]);
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: comment start ]
+The 1st order differential equations are discretized and solved with the selected integration method. 
+h is the sampling time.
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+pidk:[num_integrate(od[1]),num_integrate(od[2]),discretize(od[3])];
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: comment start ]
+Define the variables for the state transition matrix.
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+vin:[D[k-1],I[k-1],e[k],e[k-1]];
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: comment start ]
+These are the variables that need to be solved.
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+vout:map(lhs,pidk);
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: comment start ]
+This is already the discrete state space representation of the PID
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+-augcoefmatrix(solve(pidk,vout)[1],vin);
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: comment start ]
+But for further simplification we prefer this form
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+M0:-augcoefmatrix(pidk,vin);
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: comment start ]
+Define constants for the coefficients.
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+constlist:delete(false,list_matrix_entries(genmatrix(lambda([r,c], if numberp(M0[r,c]) then false else concat([A,B,C][r],c)=M0[r,c]),length(vout),length(vin))));
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+block([ratfac:true],ratsimp(constlist));
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: comment start ]
+Substitute them back into the matrix
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+M1:subst(map(reverse,constlist), M0);
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: comment start ]
+Rebuild the array of equations with the coefficients substituted
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+M2:  M1 . append(vin,[1]);
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: comment start ]
+These are equations to implement for the PID
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+f0:flatten(map(solve,list_matrix_entries(M2),vout));
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: section start ]
+Initialization
+   [wxMaxima: section end   ] */
+
+
+/* [wxMaxima: comment start ]
+Since this is a initial value problem some initialization for the state variables D[k] and I[k] is needed.
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: subsect start ]
+Steady State Initialization
+   [wxMaxima: subsect end   ] */
+
+
+/* [wxMaxima: comment start ]
+If you only have the actuator setting you can use steady state initialization assuming that the system is in equilibrium.
+Under the condition that the state variables must not change,
+I[k]=I[k-1],D[k]=D[k-1], e[k]=e[k-1], only the steady state output value u[k] is needed.
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+solve(append(f0,[I[k]=I[k-1],D[k]=D[k-1],e[k]=e[k-1]]),[I[k],D[k],D[k-1],I[k-1],e[k],e[k-1]]);
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: subsect start ]
+Partial Re-Initialization
+   [wxMaxima: subsect end   ] */
+
+
+/* [wxMaxima: comment start ]
+Partial re-initialization can be used to avoid jumps in the output signal when the PID parameters have been 
+modified or the actuator value u[k] is different because the system is currently not controlled by the PID.
+It  keeps the state of the D[k] variable which represents the low pass filter that will decay with the rate of the new parameters and
+adjust the I[k] variable to match the last data point (e[k], u[k]).
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+solve(f0,[I[k],I[k-1],D[k-1]]);
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: subsect start ]
+Initialization by Input and Output Data
+   [wxMaxima: subsect end   ] */
+
+
+/* [wxMaxima: comment start ]
+The state variables D[k] and I[k] can be initialized by supplying two IO data points (e[k], u[k]) and (e[k-1], u[k-1])
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+f1:subst(k-1,k,f0);
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+ratsimp(solve(append(f0,f1),[D[k],I[k],D[k-1],I[k-1],D[k-2],I[k-2]])[1]);
+/* [wxMaxima: input   end   ] */
+
+
+
+/* Old versions of Maxima abort on loading files that end in a comment. */
+"Created with wxMaxima 20.06.6"$

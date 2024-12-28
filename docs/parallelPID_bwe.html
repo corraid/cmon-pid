@@ -1,0 +1,1073 @@
+<!DOCTYPE html>
+<!DOCTYPE html>
+<html lang="">
+  <head>
+    <title>parallelPID_bwe</title>
+    <meta name="generator" content="wxMaxima"/>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+    <script type="text/x-mathjax-config">  MathJax.Hub.Config({
+    displayAlign: "left",
+    context: "MathJax",
+    TeX: {TagSide: "left"}
+  })
+</script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/MathJax.js?config=TeX-AMS_HTML" async="async">  // A comment that hinders wxWidgets from optimizing this tag too much.
+</script>
+    <link rel="stylesheet" type="text/css" href="wxmaxima.css"/>
+  </head>
+  <body>
+    <!-- ****************************************************** -->
+    <!-- *        Created with wxMaxima version 20.06.6       * -->
+    <!-- ****************************************************** -->
+    <noscript>
+      <div class="error message">
+        <p>Please enable JavaScript in order to get a 2d display of the equations embedded in this web page.</p>
+      </div>
+    </noscript>
+    <p hidden="hidden">\(      \DeclareMathOperator{\abs}{abs}
+      \newcommand{\ensuremath}[1]{\mbox{$#1$}}
+\)</p>
+    <!-- Code cell -->
+    <table>
+      <tr>
+        <td>
+          <span class="prompt">(%i1)	
+  </span>
+        </td>
+        <td>
+          <span class="input">
+            <span class="code_function">load</span>
+            <span class="code_operator">(</span>
+            <span class="code_string">"utilities.wxm"</span>
+            <span class="code_operator">)</span>
+            <span class="code_endofline">;</span>
+          </span>
+        </td>
+      </tr>
+    </table>
+    <p>\[\tag{%o1} utilities.wxm\]
+</p>
+    <!-- Code cell -->
+    <table>
+      <tr>
+        <td>
+          <span class="prompt">(%i2)	
+  </span>
+        </td>
+        <td>
+          <span class="input">
+            <span class="code_variable">simp</span>
+            <span class="code_operator">:</span>
+            <span class="code_function">false</span>
+            <span class="code_endofline">;</span>
+          </span>
+        </td>
+      </tr>
+    </table>
+    <p>\[\tag{%o2} \mbox{false}\]
+</p>
+    <!-- Section cell -->
+    <div class="section">
+      <p>  1 Definintion
+</p>
+    </div>
+    <!-- Text cell -->
+    <div class="comment">The PID transfer function. e(s)=r(s)-y(s) is the input error signal with r(s) the setpoint and y(s) the sensor readings. u(s) is the output to the actuator.
+</div>
+    <!-- Code cell -->
+    <table>
+      <tr>
+        <td>
+          <span class="prompt">(%i3)	
+  </span>
+        </td>
+        <td>
+          <span class="input">
+            <span class="code_variable">tf</span>
+            <span class="code_operator">:</span>
+            <span class="code_function">u</span>
+            <span class="code_operator">(</span>
+            <span class="code_variable">s</span>
+            <span class="code_operator">)</span>
+            <span class="code_operator">/</span>
+            <span class="code_function">e</span>
+            <span class="code_operator">(</span>
+            <span class="code_variable">s</span>
+            <span class="code_operator">)</span>
+            <span class="code_operator">=</span>
+            <span class="code_operator">(</span>
+            <span class="code_variable">Kp</span>
+            <span class="code_operator">+</span>
+            <span class="code_variable">Ki</span>
+            <span class="code_operator">/</span>
+            <span class="code_variable">s</span>
+            <span class="code_operator">+</span>
+            <span class="code_variable">Kd</span>
+            <span class="code_operator">·</span>
+            <span class="code_variable">s</span>
+            <span class="code_operator">)</span>
+            <span class="code_operator">·</span>
+            <span class="code_operator">(</span>
+            <span class="code_number">1</span>
+            <span class="code_operator">/</span>
+            <span class="code_operator">(</span>
+            <span class="code_variable">Tf</span>
+            <span class="code_operator">·</span>
+            <span class="code_variable">s</span>
+            <span class="code_operator">+</span>
+            <span class="code_number">1</span>
+            <span class="code_operator">)</span>
+            <span class="code_operator">)</span>
+            <span class="code_endofline">;</span>
+          </span>
+        </td>
+      </tr>
+    </table>
+    <p>\[\tag{%o3} \frac{\operatorname{u}(s)}{\operatorname{e}(s)}=\left( \mathit{Kp}+\frac{\mathit{Ki}}{s}+\mathit{Kd} s\right) \, \frac{1}{\mathit{Tf} s+1}\]
+</p>
+    <!-- Text cell -->
+    <div class="comment">Select integration method: backward_euler or bilinear
+</div>
+    <!-- Code cell -->
+    <table>
+      <tr>
+        <td>
+          <span class="prompt">(%i4)	
+  </span>
+        </td>
+        <td>
+          <span class="input">
+            <span class="code_variable">num_integrate</span>
+            <span class="code_operator">:</span>
+            <span class="code_variable">backward_euler</span>
+            <span class="code_endofline">;</span>
+          </span>
+        </td>
+      </tr>
+    </table>
+    <p>\[\tag{%o4} \mathit{backward\_ euler}\]
+</p>
+    <!-- Code cell -->
+    <table>
+      <tr>
+        <td>
+          <span class="prompt">(%i5)	
+  </span>
+        </td>
+        <td>
+          <span class="input">
+            <span class="code_variable">simp</span>
+            <span class="code_operator">:</span>
+            <span class="code_function">true</span>
+            <span class="code_endofline">;</span>
+          </span>
+        </td>
+      </tr>
+    </table>
+    <p>\[\tag{%o5} \mbox{true}\]
+</p>
+    <!-- Code cell -->
+    <table>
+      <tr>
+        <td>
+          <span class="prompt">(%i6)	
+  </span>
+        </td>
+        <td>
+          <span class="input">
+            <span class="code_function">num_integrate</span>
+            <span class="code_operator">(</span>
+            <span class="code_function">diff</span>
+            <span class="code_operator">(</span>
+            <span class="code_function">y</span>
+            <span class="code_operator">(</span>
+            <span class="code_variable">t</span>
+            <span class="code_operator">)</span>
+            <span class="code_endofline">,</span>
+            <span class="code_variable">t</span>
+            <span class="code_operator">)</span>
+            <span class="code_operator">=</span>
+            <span class="code_function">f</span>
+            <span class="code_operator">(</span>
+            <span class="code_function">y</span>
+            <span class="code_operator">(</span>
+            <span class="code_variable">t</span>
+            <span class="code_operator">)</span>
+            <span class="code_endofline">,</span>
+            <span class="code_variable">t</span>
+            <span class="code_operator">)</span>
+            <span class="code_operator">)</span>
+            <span class="code_endofline">;</span>
+          </span>
+        </td>
+      </tr>
+    </table>
+    <p>\[\tag{%o6} {y_k}=h \operatorname{f}\left( {y_k}\operatorname{,}h k\right) +{y_{k-1}}\]
+</p>
+    <!-- Section cell -->
+    <div class="section">
+      <p>  2 Realization
+</p>
+    </div>
+    <!-- Text cell -->
+    <div class="comment">The 2nd order differential equation is split into 1st order equations by substituting state variables.
+      <br/>Partial fractions allow the separation of the integrator and the low pass filter into distinct states.
+</div>
+    <!-- Code cell -->
+    <table>
+      <tr>
+        <td>
+          <span class="prompt">(%i7)	
+  </span>
+        </td>
+        <td>
+          <span class="input">
+            <span class="code_variable">tffr</span>
+            <span class="code_operator">:</span>
+            <span class="code_function">partfrac</span>
+            <span class="code_operator">(</span>
+            <span class="code_variable">tf</span>
+            <span class="code_operator">·</span>
+            <span class="code_function">denom</span>
+            <span class="code_operator">(</span>
+            <span class="code_function">lhs</span>
+            <span class="code_operator">(</span>
+            <span class="code_variable">tf</span>
+            <span class="code_operator">)</span>
+            <span class="code_operator">)</span>
+            <span class="code_endofline">,</span>
+            <span class="code_variable">s</span>
+            <span class="code_operator">)</span>
+            <span class="code_endofline">;</span>
+          </span>
+        </td>
+      </tr>
+    </table>
+    <p>\[\tag{%o7} \operatorname{u}(s)=-\frac{\left( \mathit{Ki}\, {{\mathit{Tf}}^{2}}-\mathit{Kp}\, \mathit{Tf}+\mathit{Kd}\right)  \operatorname{e}(s)}{\mathit{Tf}\, \left( \mathit{Tf} s+1\right) }+\frac{\mathit{Ki} \operatorname{e}(s)}{s}+\frac{\mathit{Kd} \operatorname{e}(s)}{\mathit{Tf}}\]
+</p>
+    <!-- Text cell -->
+    <div class="comment">The pole is assigned to the D(s) variable.
+</div>
+    <!-- Code cell -->
+    <table>
+      <tr>
+        <td>
+          <span class="prompt">(%i8)	
+  </span>
+        </td>
+        <td>
+          <span class="input">
+            <span class="code_variable">tfD</span>
+            <span class="code_operator">:</span>
+            <span class="code_function">D</span>
+            <span class="code_operator">(</span>
+            <span class="code_variable">s</span>
+            <span class="code_operator">)</span>
+            <span class="code_operator">=</span>
+            <span class="code_function">part</span>
+            <span class="code_operator">(</span>
+            <span class="code_variable">tffr</span>
+            <span class="code_endofline">,</span>
+            <span class="code_number">2</span>
+            <span class="code_endofline">,</span>
+            <span class="code_number">1</span>
+            <span class="code_operator">)</span>
+            <span class="code_endofline">;</span>
+          </span>
+        </td>
+      </tr>
+    </table>
+    <p>\[\tag{%o8} \operatorname{D}(s)=-\frac{\left( \mathit{Ki}\, {{\mathit{Tf}}^{2}}-\mathit{Kp}\, \mathit{Tf}+\mathit{Kd}\right)  \operatorname{e}(s)}{\mathit{Tf}\, \left( \mathit{Tf} s+1\right) }\]
+</p>
+    <!-- Text cell -->
+    <div class="comment">The integrator is assigned to the I(s) variable.
+</div>
+    <!-- Code cell -->
+    <table>
+      <tr>
+        <td>
+          <span class="prompt">(%i9)	
+  </span>
+        </td>
+        <td>
+          <span class="input">
+            <span class="code_variable">tfI</span>
+            <span class="code_operator">:</span>
+            <span class="code_function">I</span>
+            <span class="code_operator">(</span>
+            <span class="code_variable">s</span>
+            <span class="code_operator">)</span>
+            <span class="code_operator">=</span>
+            <span class="code_function">part</span>
+            <span class="code_operator">(</span>
+            <span class="code_variable">tffr</span>
+            <span class="code_endofline">,</span>
+            <span class="code_number">2</span>
+            <span class="code_endofline">,</span>
+            <span class="code_number">2</span>
+            <span class="code_operator">)</span>
+            <span class="code_endofline">;</span>
+          </span>
+        </td>
+      </tr>
+    </table>
+    <p>\[\tag{%o9} \operatorname{I}(s)=\frac{\mathit{Ki} \operatorname{e}(s)}{s}\]
+</p>
+    <!-- Text cell -->
+    <div class="comment">The states are substituted into the output equation. It contains no further state.
+</div>
+    <!-- Code cell -->
+    <table>
+      <tr>
+        <td>
+          <span class="prompt">(%i10)	
+  </span>
+        </td>
+        <td>
+          <span class="input">
+            <span class="code_variable">tfY</span>
+            <span class="code_operator">:</span>
+            <span class="code_function">subst</span>
+            <span class="code_operator">(</span>
+            <span class="code_operator">[</span>
+            <span class="code_function">reverse</span>
+            <span class="code_operator">(</span>
+            <span class="code_variable">tfD</span>
+            <span class="code_operator">)</span>
+            <span class="code_endofline">,</span>
+            <span class="code_function">reverse</span>
+            <span class="code_operator">(</span>
+            <span class="code_variable">tfI</span>
+            <span class="code_operator">)</span>
+            <span class="code_operator">]</span>
+            <span class="code_endofline">,</span>
+            <span class="code_variable">tffr</span>
+            <span class="code_operator">)</span>
+            <span class="code_endofline">;</span>
+          </span>
+        </td>
+      </tr>
+    </table>
+    <p>\[\tag{%o10} \operatorname{u}(s)=\frac{\mathit{Kd} \operatorname{e}(s)}{\mathit{Tf}}+\operatorname{I}(s)+\operatorname{D}(s)\]
+</p>
+    <!-- Text cell -->
+    <div class="comment">Inverse laplace transformation to get ordinary differential equations.
+</div>
+    <!-- Code cell -->
+    <table>
+      <tr>
+        <td>
+          <span class="prompt">(%i11)	
+  </span>
+        </td>
+        <td>
+          <span class="input">
+            <span class="code_variable">od</span>
+            <span class="code_operator">:</span>
+            <span class="code_function">map</span>
+            <span class="code_operator">(</span>
+            <span class="code_variable">ilp</span>
+            <span class="code_endofline">,</span>
+            <span class="code_operator">[</span>
+            <span class="code_variable">tfD</span>
+            <span class="code_endofline">,</span>
+            <span class="code_variable">tfI</span>
+            <span class="code_endofline">,</span>
+            <span class="code_variable">tfY</span>
+            <span class="code_operator">]</span>
+            <span class="code_operator">)</span>
+            <span class="code_endofline">;</span>
+          </span>
+        </td>
+      </tr>
+    </table>
+    <p>\[\tag{%o11} [\frac{d}{d t} \operatorname{D}(t)=-\frac{\left( \mathit{Ki}\, {{\mathit{Tf}}^{2}}-\mathit{Kp}\, \mathit{Tf}+\mathit{Kd}\right)  \operatorname{e}(t)+\mathit{Tf} \operatorname{D}(t)}{{{\mathit{Tf}}^{2}}}\operatorname{,}\frac{d}{d t} \operatorname{I}(t)=\mathit{Ki} \operatorname{e}(t)\operatorname{,}\operatorname{u}(t)=\frac{\mathit{Kd} \operatorname{e}(t)+\mathit{Tf} \operatorname{I}(t)+\mathit{Tf} \operatorname{D}(t)}{\mathit{Tf}}]\]
+</p>
+    <!-- Text cell -->
+    <div class="comment">The 1st order differential equations are discretized and solved with the selected integration method. 
+      <br/>h is the sampling time.
+</div>
+    <!-- Code cell -->
+    <table>
+      <tr>
+        <td>
+          <span class="prompt">(%i12)	
+  </span>
+        </td>
+        <td>
+          <span class="input">
+            <span class="code_variable">pidk</span>
+            <span class="code_operator">:</span>
+            <span class="code_operator">[</span>
+            <span class="code_function">num_integrate</span>
+            <span class="code_operator">(</span>
+            <span class="code_variable">od</span>
+            <span class="code_operator">[</span>
+            <span class="code_number">1</span>
+            <span class="code_operator">]</span>
+            <span class="code_operator">)</span>
+            <span class="code_endofline">,</span>
+            <span class="code_function">num_integrate</span>
+            <span class="code_operator">(</span>
+            <span class="code_variable">od</span>
+            <span class="code_operator">[</span>
+            <span class="code_number">2</span>
+            <span class="code_operator">]</span>
+            <span class="code_operator">)</span>
+            <span class="code_endofline">,</span>
+            <span class="code_function">discretize</span>
+            <span class="code_operator">(</span>
+            <span class="code_variable">od</span>
+            <span class="code_operator">[</span>
+            <span class="code_number">3</span>
+            <span class="code_operator">]</span>
+            <span class="code_operator">)</span>
+            <span class="code_operator">]</span>
+            <span class="code_endofline">;</span>
+          </span>
+        </td>
+      </tr>
+    </table>
+    <p>\[\tag{%o12} [{D_k}=-\frac{\left( \mathit{Ki}\, {{\mathit{Tf}}^{2}}-\mathit{Kp}\, \mathit{Tf}+\mathit{Kd}\right)  h\, {e_k}-{{\mathit{Tf}}^{2}}\, {D_{k-1}}}{\mathit{Tf} h+{{\mathit{Tf}}^{2}}}\operatorname{,}{I_k}=\mathit{Ki} h\, {e_k}+{I_{k-1}}\operatorname{,}{u_k}=\frac{\mathit{Kd}\, {e_k}+\mathit{Tf}\, {I_k}+\mathit{Tf}\, {D_k}}{\mathit{Tf}}]\]
+</p>
+    <!-- Text cell -->
+    <div class="comment">Define the variables for the state transition matrix.
+</div>
+    <!-- Code cell -->
+    <table>
+      <tr>
+        <td>
+          <span class="prompt">(%i13)	
+  </span>
+        </td>
+        <td>
+          <span class="input">
+            <span class="code_variable">vin</span>
+            <span class="code_operator">:</span>
+            <span class="code_operator">[</span>
+            <span class="code_variable">D</span>
+            <span class="code_operator">[</span>
+            <span class="code_variable">k</span>
+            <span class="code_operator">−</span>
+            <span class="code_number">1</span>
+            <span class="code_operator">]</span>
+            <span class="code_endofline">,</span>
+            <span class="code_variable">I</span>
+            <span class="code_operator">[</span>
+            <span class="code_variable">k</span>
+            <span class="code_operator">−</span>
+            <span class="code_number">1</span>
+            <span class="code_operator">]</span>
+            <span class="code_endofline">,</span>
+            <span class="code_variable">e</span>
+            <span class="code_operator">[</span>
+            <span class="code_variable">k</span>
+            <span class="code_operator">]</span>
+            <span class="code_endofline">,</span>
+            <span class="code_variable">e</span>
+            <span class="code_operator">[</span>
+            <span class="code_variable">k</span>
+            <span class="code_operator">−</span>
+            <span class="code_number">1</span>
+            <span class="code_operator">]</span>
+            <span class="code_operator">]</span>
+            <span class="code_endofline">;</span>
+          </span>
+        </td>
+      </tr>
+    </table>
+    <p>\[\tag{%o13} [{D_{k-1}}\operatorname{,}{I_{k-1}}\operatorname{,}{e_k}\operatorname{,}{e_{k-1}}]\]
+</p>
+    <!-- Text cell -->
+    <div class="comment">These are the variables that need to be solved.
+</div>
+    <!-- Code cell -->
+    <table>
+      <tr>
+        <td>
+          <span class="prompt">(%i14)	
+  </span>
+        </td>
+        <td>
+          <span class="input">
+            <span class="code_variable">vout</span>
+            <span class="code_operator">:</span>
+            <span class="code_function">map</span>
+            <span class="code_operator">(</span>
+            <span class="code_variable">lhs</span>
+            <span class="code_endofline">,</span>
+            <span class="code_variable">pidk</span>
+            <span class="code_operator">)</span>
+            <span class="code_endofline">;</span>
+          </span>
+        </td>
+      </tr>
+    </table>
+    <p>\[\tag{%o14} [{D_k}\operatorname{,}{I_k}\operatorname{,}{u_k}]\]
+</p>
+    <!-- Text cell -->
+    <div class="comment">This is already the discrete state space representation of the PID
+</div>
+    <!-- Code cell -->
+    <table>
+      <tr>
+        <td>
+          <span class="prompt">(%i15)	
+  </span>
+        </td>
+        <td>
+          <span class="input">
+            <span class="code_operator">−</span>
+            <span class="code_function">augcoefmatrix</span>
+            <span class="code_operator">(</span>
+            <span class="code_function">solve</span>
+            <span class="code_operator">(</span>
+            <span class="code_variable">pidk</span>
+            <span class="code_endofline">,</span>
+            <span class="code_variable">vout</span>
+            <span class="code_operator">)</span>
+            <span class="code_operator">[</span>
+            <span class="code_number">1</span>
+            <span class="code_operator">]</span>
+            <span class="code_endofline">,</span>
+            <span class="code_variable">vin</span>
+            <span class="code_operator">)</span>
+            <span class="code_endofline">;</span>
+          </span>
+        </td>
+      </tr>
+    </table>
+    <p>\[\tag{%o15} \begin{pmatrix}\frac{\mathit{Tf}}{h+\mathit{Tf}} &amp; 0 &amp; -\frac{\left( \mathit{Ki}\, {{\mathit{Tf}}^{2}}-\mathit{Kp}\, \mathit{Tf}+\mathit{Kd}\right)  h}{\mathit{Tf} h+{{\mathit{Tf}}^{2}}} &amp; 0 &amp; -{D_k}\\
+0 &amp; 1 &amp; \mathit{Ki} h &amp; 0 &amp; -{I_k}\\
+\frac{\mathit{Tf}}{h+\mathit{Tf}} &amp; 1 &amp; \frac{\mathit{Ki}\, {{h}^{2}}+\mathit{Kp} h+\mathit{Kd}}{h+\mathit{Tf}} &amp; 0 &amp; -{u_k}\end{pmatrix}\]
+</p>
+    <!-- Text cell -->
+    <div class="comment">But for further simplification we prefer this form
+</div>
+    <!-- Code cell -->
+    <table>
+      <tr>
+        <td>
+          <span class="prompt">(%i16)	
+  </span>
+        </td>
+        <td>
+          <span class="input">
+            <span class="code_variable">M0</span>
+            <span class="code_operator">:</span>
+            <span class="code_operator">−</span>
+            <span class="code_function">augcoefmatrix</span>
+            <span class="code_operator">(</span>
+            <span class="code_variable">pidk</span>
+            <span class="code_endofline">,</span>
+            <span class="code_variable">vin</span>
+            <span class="code_operator">)</span>
+            <span class="code_endofline">;</span>
+          </span>
+        </td>
+      </tr>
+    </table>
+    <p>\[\tag{%o16} \begin{pmatrix}\frac{\mathit{Tf}}{h+\mathit{Tf}} &amp; 0 &amp; -\frac{\left( \mathit{Ki}\, {{\mathit{Tf}}^{2}}-\mathit{Kp}\, \mathit{Tf}+\mathit{Kd}\right)  h}{\mathit{Tf} h+{{\mathit{Tf}}^{2}}} &amp; 0 &amp; -{D_k}\\
+0 &amp; 1 &amp; \mathit{Ki} h &amp; 0 &amp; -{I_k}\\
+0 &amp; 0 &amp; \frac{\mathit{Kd}}{\mathit{Tf}} &amp; 0 &amp; \frac{\mathit{Tf}\, {I_k}+\mathit{Tf}\, {D_k}}{\mathit{Tf}}-{u_k}\end{pmatrix}\]
+</p>
+    <!-- Text cell -->
+    <div class="comment">Define constants for the coefficients.
+</div>
+    <!-- Code cell -->
+    <table>
+      <tr>
+        <td>
+          <span class="prompt">(%i17)	
+  </span>
+        </td>
+        <td>
+          <span class="input">
+            <span class="code_variable">constlist</span>
+            <span class="code_operator">:</span>
+            <span class="code_function">delete</span>
+            <span class="code_operator">(</span>
+            <span class="code_function">false</span>
+            <span class="code_endofline">,</span>
+            <span class="code_function">list_matrix_entries</span>
+            <span class="code_operator">(</span>
+            <span class="code_function">genmatrix</span>
+            <span class="code_operator">(</span>
+            <span class="code_function">lambda</span>
+            <span class="code_operator">(</span>
+            <span class="code_operator">[</span>
+            <span class="code_variable">r</span>
+            <span class="code_endofline">,</span>
+            <span class="code_variable">c</span>
+            <span class="code_operator">]</span>
+            <span class="code_endofline">,</span>
+            <span class="code_function">if</span>
+            <span class="code_function">numberp</span>
+            <span class="code_operator">(</span>
+            <span class="code_variable">M0</span>
+            <span class="code_operator">[</span>
+            <span class="code_variable">r</span>
+            <span class="code_endofline">,</span>
+            <span class="code_variable">c</span>
+            <span class="code_operator">]</span>
+            <span class="code_operator">)</span>
+            <span class="code_function">then</span>
+            <span class="code_function">false</span>
+            <span class="code_function">else</span>
+            <span class="code_function">concat</span>
+            <span class="code_operator">(</span>
+            <span class="code_operator">[</span>
+            <span class="code_variable">A</span>
+            <span class="code_endofline">,</span>
+            <span class="code_variable">B</span>
+            <span class="code_endofline">,</span>
+            <span class="code_variable">C</span>
+            <span class="code_operator">]</span>
+            <span class="code_operator">[</span>
+            <span class="code_variable">r</span>
+            <span class="code_operator">]</span>
+            <span class="code_endofline">,</span>
+            <span class="code_variable">c</span>
+            <span class="code_operator">)</span>
+            <span class="code_operator">=</span>
+            <span class="code_variable">M0</span>
+            <span class="code_operator">[</span>
+            <span class="code_variable">r</span>
+            <span class="code_endofline">,</span>
+            <span class="code_variable">c</span>
+            <span class="code_operator">]</span>
+            <span class="code_operator">)</span>
+            <span class="code_endofline">,</span>
+            <span class="code_function">length</span>
+            <span class="code_operator">(</span>
+            <span class="code_variable">vout</span>
+            <span class="code_operator">)</span>
+            <span class="code_endofline">,</span>
+            <span class="code_function">length</span>
+            <span class="code_operator">(</span>
+            <span class="code_variable">vin</span>
+            <span class="code_operator">)</span>
+            <span class="code_operator">)</span>
+            <span class="code_operator">)</span>
+            <span class="code_operator">)</span>
+            <span class="code_endofline">;</span>
+          </span>
+        </td>
+      </tr>
+    </table>
+    <p>\[\tag{%o17} [\mathit{A1}=\frac{\mathit{Tf}}{h+\mathit{Tf}}\operatorname{,}\mathit{A3}=-\frac{\left( \mathit{Ki}\, {{\mathit{Tf}}^{2}}-\mathit{Kp}\, \mathit{Tf}+\mathit{Kd}\right)  h}{\mathit{Tf} h+{{\mathit{Tf}}^{2}}}\operatorname{,}\mathit{B3}=\mathit{Ki} h\operatorname{,}\mathit{C3}=\frac{\mathit{Kd}}{\mathit{Tf}}]\]
+</p>
+    <!-- Code cell -->
+    <table>
+      <tr>
+        <td>
+          <span class="prompt">(%i33)	
+  </span>
+        </td>
+        <td>
+          <span class="input">
+            <span class="code_function">block</span>
+            <span class="code_operator">(</span>
+            <span class="code_operator">[</span>
+            <span class="code_variable">ratfac</span>
+            <span class="code_operator">:</span>
+            <span class="code_function">true</span>
+            <span class="code_operator">]</span>
+            <span class="code_endofline">,</span>
+            <span class="code_function">ratsimp</span>
+            <span class="code_operator">(</span>
+            <span class="code_variable">constlist</span>
+            <span class="code_operator">)</span>
+            <span class="code_operator">)</span>
+            <span class="code_endofline">;</span>
+          </span>
+        </td>
+      </tr>
+    </table>
+    <p>\[\tag{%o33} [\mathit{A1}=\frac{\mathit{Tf}}{h+\mathit{Tf}}\operatorname{,}\mathit{A3}=-\frac{\left( \mathit{Ki}\, {{\mathit{Tf}}^{2}}-\mathit{Kp}\, \mathit{Tf}+\mathit{Kd}\right)  h}{\mathit{Tf}\, \left( h+\mathit{Tf}\right) }\operatorname{,}\mathit{B3}=\mathit{Ki} h\operatorname{,}\mathit{C3}=\frac{\mathit{Kd}}{\mathit{Tf}}]\]
+</p>
+    <!-- Text cell -->
+    <div class="comment">Substitute them back into the matrix
+</div>
+    <!-- Code cell -->
+    <table>
+      <tr>
+        <td>
+          <span class="prompt">(%i19)	
+  </span>
+        </td>
+        <td>
+          <span class="input">
+            <span class="code_variable">M1</span>
+            <span class="code_operator">:</span>
+            <span class="code_function">subst</span>
+            <span class="code_operator">(</span>
+            <span class="code_function">map</span>
+            <span class="code_operator">(</span>
+            <span class="code_variable">reverse</span>
+            <span class="code_endofline">,</span>
+            <span class="code_variable">constlist</span>
+            <span class="code_operator">)</span>
+            <span class="code_endofline">,</span>
+            <span class="code_variable">M0</span>
+            <span class="code_operator">)</span>
+            <span class="code_endofline">;</span>
+          </span>
+        </td>
+      </tr>
+    </table>
+    <p>\[\tag{%o19} \begin{pmatrix}\mathit{A1} &amp; 0 &amp; \mathit{A3} &amp; 0 &amp; -{D_k}\\
+0 &amp; 1 &amp; \mathit{B3} &amp; 0 &amp; -{I_k}\\
+0 &amp; 0 &amp; \mathit{C3} &amp; 0 &amp; \frac{\mathit{Tf}\, {I_k}+\mathit{Tf}\, {D_k}}{\mathit{Tf}}-{u_k}\end{pmatrix}\]
+</p>
+    <!-- Text cell -->
+    <div class="comment">Rebuild the array of equations with the coefficients substituted
+</div>
+    <!-- Code cell -->
+    <table>
+      <tr>
+        <td>
+          <span class="prompt">(%i20)	
+  </span>
+        </td>
+        <td>
+          <span class="input">
+            <span class="code_variable">M2</span>
+            <span class="code_operator">:</span>
+            <span class="code_variable">M1</span>
+            <span class="code_endofline">.</span>
+            <span class="code_function">append</span>
+            <span class="code_operator">(</span>
+            <span class="code_variable">vin</span>
+            <span class="code_endofline">,</span>
+            <span class="code_operator">[</span>
+            <span class="code_number">1</span>
+            <span class="code_operator">]</span>
+            <span class="code_operator">)</span>
+            <span class="code_endofline">;</span>
+          </span>
+        </td>
+      </tr>
+    </table>
+    <p>\[\tag{%o20} \begin{pmatrix}\mathit{A3}\, {e_k}-{D_k}+\mathit{A1}\, {D_{k-1}}\\
+\mathit{B3}\, {e_k}-{I_k}+{I_{k-1}}\\
+-{u_k}+\mathit{C3}\, {e_k}+\frac{\mathit{Tf}\, {I_k}+\mathit{Tf}\, {D_k}}{\mathit{Tf}}\end{pmatrix}\]
+</p>
+    <!-- Text cell -->
+    <div class="comment">These are equations to implement for the PID
+</div>
+    <!-- Code cell -->
+    <table>
+      <tr>
+        <td>
+          <span class="prompt">(%i21)	
+  </span>
+        </td>
+        <td>
+          <span class="input">
+            <span class="code_variable">f0</span>
+            <span class="code_operator">:</span>
+            <span class="code_function">flatten</span>
+            <span class="code_operator">(</span>
+            <span class="code_function">map</span>
+            <span class="code_operator">(</span>
+            <span class="code_variable">solve</span>
+            <span class="code_endofline">,</span>
+            <span class="code_function">list_matrix_entries</span>
+            <span class="code_operator">(</span>
+            <span class="code_variable">M2</span>
+            <span class="code_operator">)</span>
+            <span class="code_endofline">,</span>
+            <span class="code_variable">vout</span>
+            <span class="code_operator">)</span>
+            <span class="code_operator">)</span>
+            <span class="code_endofline">;</span>
+          </span>
+        </td>
+      </tr>
+    </table>
+    <p>\[\tag{%o21} [{D_k}=\mathit{A3}\, {e_k}+\mathit{A1}\, {D_{k-1}}\operatorname{,}{I_k}=\mathit{B3}\, {e_k}+{I_{k-1}}\operatorname{,}{u_k}=\mathit{C3}\, {e_k}+{I_k}+{D_k}]\]
+</p>
+    <!-- Section cell -->
+    <div class="section">
+      <p>  3 Initialization
+</p>
+    </div>
+    <!-- Text cell -->
+    <div class="comment">Since this is a initial value problem some initialization for the state variables D[k] and I[k] is needed.
+</div>
+    <!-- Subsection cell -->
+    <div class="subsect">
+      <p>  3.1 Steady State Initialization
+</p>
+    </div>
+    <!-- Text cell -->
+    <div class="comment">If you only have the actuator setting you can use steady state initialization assuming that the system is in equilibrium.
+      <br/>Under the condition that the state variables must not change,
+      <br/>I[k]=I[k-1],D[k]=D[k-1], e[k]=e[k-1], only the steady state output value u[k] is needed.
+</div>
+    <!-- Code cell -->
+    <table>
+      <tr>
+        <td>
+          <span class="prompt">(%i22)	
+  </span>
+        </td>
+        <td>
+          <span class="input">
+            <span class="code_function">solve</span>
+            <span class="code_operator">(</span>
+            <span class="code_function">append</span>
+            <span class="code_operator">(</span>
+            <span class="code_variable">f0</span>
+            <span class="code_endofline">,</span>
+            <span class="code_operator">[</span>
+            <span class="code_variable">I</span>
+            <span class="code_operator">[</span>
+            <span class="code_variable">k</span>
+            <span class="code_operator">]</span>
+            <span class="code_operator">=</span>
+            <span class="code_variable">I</span>
+            <span class="code_operator">[</span>
+            <span class="code_variable">k</span>
+            <span class="code_operator">−</span>
+            <span class="code_number">1</span>
+            <span class="code_operator">]</span>
+            <span class="code_endofline">,</span>
+            <span class="code_variable">D</span>
+            <span class="code_operator">[</span>
+            <span class="code_variable">k</span>
+            <span class="code_operator">]</span>
+            <span class="code_operator">=</span>
+            <span class="code_variable">D</span>
+            <span class="code_operator">[</span>
+            <span class="code_variable">k</span>
+            <span class="code_operator">−</span>
+            <span class="code_number">1</span>
+            <span class="code_operator">]</span>
+            <span class="code_endofline">,</span>
+            <span class="code_variable">e</span>
+            <span class="code_operator">[</span>
+            <span class="code_variable">k</span>
+            <span class="code_operator">]</span>
+            <span class="code_operator">=</span>
+            <span class="code_variable">e</span>
+            <span class="code_operator">[</span>
+            <span class="code_variable">k</span>
+            <span class="code_operator">−</span>
+            <span class="code_number">1</span>
+            <span class="code_operator">]</span>
+            <span class="code_operator">]</span>
+            <span class="code_operator">)</span>
+            <span class="code_endofline">,</span>
+            <span class="code_operator">[</span>
+            <span class="code_variable">I</span>
+            <span class="code_operator">[</span>
+            <span class="code_variable">k</span>
+            <span class="code_operator">]</span>
+            <span class="code_endofline">,</span>
+            <span class="code_variable">D</span>
+            <span class="code_operator">[</span>
+            <span class="code_variable">k</span>
+            <span class="code_operator">]</span>
+            <span class="code_endofline">,</span>
+            <span class="code_variable">D</span>
+            <span class="code_operator">[</span>
+            <span class="code_variable">k</span>
+            <span class="code_operator">−</span>
+            <span class="code_number">1</span>
+            <span class="code_operator">]</span>
+            <span class="code_endofline">,</span>
+            <span class="code_variable">I</span>
+            <span class="code_operator">[</span>
+            <span class="code_variable">k</span>
+            <span class="code_operator">−</span>
+            <span class="code_number">1</span>
+            <span class="code_operator">]</span>
+            <span class="code_endofline">,</span>
+            <span class="code_variable">e</span>
+            <span class="code_operator">[</span>
+            <span class="code_variable">k</span>
+            <span class="code_operator">]</span>
+            <span class="code_endofline">,</span>
+            <span class="code_variable">e</span>
+            <span class="code_operator">[</span>
+            <span class="code_variable">k</span>
+            <span class="code_operator">−</span>
+            <span class="code_number">1</span>
+            <span class="code_operator">]</span>
+            <span class="code_operator">]</span>
+            <span class="code_operator">)</span>
+            <span class="code_endofline">;</span>
+          </span>
+        </td>
+      </tr>
+    </table>
+    <p>\[\tag{%o22} [[{I_k}={u_k}\operatorname{,}{D_k}=0\operatorname{,}{D_{k-1}}=0\operatorname{,}{I_{k-1}}={u_k}\operatorname{,}{e_k}=0\operatorname{,}{e_{k-1}}=0]]\]
+</p>
+    <!-- Subsection cell -->
+    <div class="subsect">
+      <p>  3.2 Partial Re-Initialization
+</p>
+    </div>
+    <!-- Text cell -->
+    <div class="comment">Partial re-initialization can be used to avoid jumps in the output signal when the PID parameters have been 
+      <br/>modified or the actuator value u[k] is different because the system is currently not controlled by the PID.
+      <br/>It  keeps the state of the D[k] variable which represents the low pass filter that will decay with the rate of the new parameters and
+      <br/>adjust the I[k] variable to match the last data point (e[k], u[k]).
+</div>
+    <!-- Code cell -->
+    <table>
+      <tr>
+        <td>
+          <span class="prompt">(%i23)	
+  </span>
+        </td>
+        <td>
+          <span class="input">
+            <span class="code_function">solve</span>
+            <span class="code_operator">(</span>
+            <span class="code_variable">f0</span>
+            <span class="code_endofline">,</span>
+            <span class="code_operator">[</span>
+            <span class="code_variable">I</span>
+            <span class="code_operator">[</span>
+            <span class="code_variable">k</span>
+            <span class="code_operator">]</span>
+            <span class="code_endofline">,</span>
+            <span class="code_variable">I</span>
+            <span class="code_operator">[</span>
+            <span class="code_variable">k</span>
+            <span class="code_operator">−</span>
+            <span class="code_number">1</span>
+            <span class="code_operator">]</span>
+            <span class="code_endofline">,</span>
+            <span class="code_variable">D</span>
+            <span class="code_operator">[</span>
+            <span class="code_variable">k</span>
+            <span class="code_operator">−</span>
+            <span class="code_number">1</span>
+            <span class="code_operator">]</span>
+            <span class="code_operator">]</span>
+            <span class="code_operator">)</span>
+            <span class="code_endofline">;</span>
+          </span>
+        </td>
+      </tr>
+    </table>
+    <p>\[\tag{%o23} [[{I_k}={u_k}-\mathit{C3}\, {e_k}-{D_k}\operatorname{,}{I_{k-1}}={u_k}+\left( -\mathit{C3}-\mathit{B3}\right) \, {e_k}-{D_k}\operatorname{,}{D_{k-1}}=-\frac{\mathit{A3}\, {e_k}-{D_k}}{\mathit{A1}}]]\]
+</p>
+    <!-- Subsection cell -->
+    <div class="subsect">
+      <p>  3.3 Initialization by Input and Output Data
+</p>
+    </div>
+    <!-- Text cell -->
+    <div class="comment">The state variables D[k] and I[k] can be initialized by supplying two IO data points (e[k], u[k]) and (e[k-1], u[k-1])
+</div>
+    <!-- Code cell -->
+    <table>
+      <tr>
+        <td>
+          <span class="prompt">(%i24)	
+  </span>
+        </td>
+        <td>
+          <span class="input">
+            <span class="code_variable">f1</span>
+            <span class="code_operator">:</span>
+            <span class="code_function">subst</span>
+            <span class="code_operator">(</span>
+            <span class="code_variable">k</span>
+            <span class="code_operator">−</span>
+            <span class="code_number">1</span>
+            <span class="code_endofline">,</span>
+            <span class="code_variable">k</span>
+            <span class="code_endofline">,</span>
+            <span class="code_variable">f0</span>
+            <span class="code_operator">)</span>
+            <span class="code_endofline">;</span>
+          </span>
+        </td>
+      </tr>
+    </table>
+    <p>\[\tag{%o24} [{D_{k-1}}=\mathit{A3}\, {e_{k-1}}+\mathit{A1}\, {D_{k-2}}\operatorname{,}{I_{k-1}}=\mathit{B3}\, {e_{k-1}}+{I_{k-2}}\operatorname{,}{u_{k-1}}=\mathit{C3}\, {e_{k-1}}+{I_{k-1}}+{D_{k-1}}]\]
+</p>
+    <!-- Code cell -->
+    <table>
+      <tr>
+        <td>
+          <span class="prompt">(%i25)	
+  </span>
+        </td>
+        <td>
+          <span class="input">
+            <span class="code_function">ratsimp</span>
+            <span class="code_operator">(</span>
+            <span class="code_function">solve</span>
+            <span class="code_operator">(</span>
+            <span class="code_function">append</span>
+            <span class="code_operator">(</span>
+            <span class="code_variable">f0</span>
+            <span class="code_endofline">,</span>
+            <span class="code_variable">f1</span>
+            <span class="code_operator">)</span>
+            <span class="code_endofline">,</span>
+            <span class="code_operator">[</span>
+            <span class="code_variable">D</span>
+            <span class="code_operator">[</span>
+            <span class="code_variable">k</span>
+            <span class="code_operator">]</span>
+            <span class="code_endofline">,</span>
+            <span class="code_variable">I</span>
+            <span class="code_operator">[</span>
+            <span class="code_variable">k</span>
+            <span class="code_operator">]</span>
+            <span class="code_endofline">,</span>
+            <span class="code_variable">D</span>
+            <span class="code_operator">[</span>
+            <span class="code_variable">k</span>
+            <span class="code_operator">−</span>
+            <span class="code_number">1</span>
+            <span class="code_operator">]</span>
+            <span class="code_endofline">,</span>
+            <span class="code_variable">I</span>
+            <span class="code_operator">[</span>
+            <span class="code_variable">k</span>
+            <span class="code_operator">−</span>
+            <span class="code_number">1</span>
+            <span class="code_operator">]</span>
+            <span class="code_endofline">,</span>
+            <span class="code_variable">D</span>
+            <span class="code_operator">[</span>
+            <span class="code_variable">k</span>
+            <span class="code_operator">−</span>
+            <span class="code_number">2</span>
+            <span class="code_operator">]</span>
+            <span class="code_endofline">,</span>
+            <span class="code_variable">I</span>
+            <span class="code_operator">[</span>
+            <span class="code_variable">k</span>
+            <span class="code_operator">−</span>
+            <span class="code_number">2</span>
+            <span class="code_operator">]</span>
+            <span class="code_operator">]</span>
+            <span class="code_operator">)</span>
+            <span class="code_operator">[</span>
+            <span class="code_number">1</span>
+            <span class="code_operator">]</span>
+            <span class="code_operator">)</span>
+            <span class="code_endofline">;</span>
+          </span>
+        </td>
+      </tr>
+    </table>
+    <p>\[\tag{%o25} [{D_k}=\frac{\mathit{A1}\, {u_k}+\left( -\mathit{A1}\, \mathit{C3}-\mathit{A1}\, \mathit{B3}-\mathit{A3}\right) \, {e_k}-\mathit{A1}\, {u_{k-1}}+\mathit{A1}\, \mathit{C3}\, {e_{k-1}}}{\mathit{A1}-1}\operatorname{,}{I_k}=-\frac{{u_k}+\left( -\mathit{C3}-\mathit{A1}\, \mathit{B3}-\mathit{A3}\right) \, {e_k}-\mathit{A1}\, {u_{k-1}}+\mathit{A1}\, \mathit{C3}\, {e_{k-1}}}{\mathit{A1}-1}\operatorname{,}{D_{k-1}}=\frac{{u_k}+\left( -\mathit{C3}-\mathit{B3}-\mathit{A3}\right) \, {e_k}-{u_{k-1}}+\mathit{C3}\, {e_{k-1}}}{\mathit{A1}-1}\operatorname{,}{I_{k-1}}=-\frac{{u_k}+\left( -\mathit{C3}-\mathit{B3}-\mathit{A3}\right) \, {e_k}-\mathit{A1}\, {u_{k-1}}+\mathit{A1}\, \mathit{C3}\, {e_{k-1}}}{\mathit{A1}-1}\operatorname{,}{D_{k-2}}=\frac{{u_k}+\left( -\mathit{C3}-\mathit{B3}-\mathit{A3}\right) \, {e_k}-{u_{k-1}}+\left( \mathit{C3}+\left( 1-\mathit{A1}\right) \, \mathit{A3}\right) \, {e_{k-1}}}{{{\mathit{A1}}^{2}}-\mathit{A1}}\operatorname{,}{I_{k-2}}=-\frac{{u_k}+\left( -\mathit{C3}-\mathit{B3}-\mathit{A3}\right) \, {e_k}-\mathit{A1}\, {u_{k-1}}+\left( \mathit{A1}\, \mathit{C3}+\left( \mathit{A1}-1\right) \, \mathit{B3}\right) \, {e_{k-1}}}{\mathit{A1}-1}]\]
+</p>
+    <hr/>
+    <p>
+      <small> Created with 
+        <a href="https://wxMaxima-developers.github.io/wxmaxima/">wxMaxima</a>.</small>
+    </p>
+  </body>
+</html>
