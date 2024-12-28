@@ -3,25 +3,25 @@
 A implementation of several common PID controller transfer functions in C++, header only, without dependencies.
 
 * Realized PID transfer functions
-  + [Serial](index.html#SeriesPID)
-  + [Parallel](index.html#ParallelPID)
-  + [N-Standard](index.html#NStdPID)
-  + [Standard](index.html#StdPID)
+  + [Serial](https://corraid.github.io/cmon-pid/index.html#SeriesPID)
+  + [Parallel](https://corraid.github.io/cmon-pid/index.html#ParallelPID)
+  + [N-Standard](https://corraid.github.io/cmon-pid/index.html#NStdPID)
+  + [Standard](https://corraid.github.io/cmon-pid/index.html#StdPID)
 
-* [Numerical solution](index.html#TFSolutions)
+* [Numerical solution](https://corraid.github.io/cmon-pid/index.html#TFSolutions)
   + Backward euler
   + Bilinear / Tustin
   
 * Anti-windup
-  + [Clamping](index.html#SimClamping) 
-  + [Back-calculation](index.html#SimBackcalc)
+  + [Clamping](https://corraid.github.io/cmon-pid/index.html#SimClamping) 
+  + [Back-calculation](https://corraid.github.io/cmon-pid/index.html#SimBackcalc)
   
 * Initialization
   + Steady State
   + Bump-less parameter change
   + Sampling points
 
-* [Simulation](index.html#Simulation) of a pid in closed loop with a second order test system
+* [Simulation](https://corraid.github.io/cmon-pid/index.html#Simulation) of a pid in closed loop with a second order test system
 
 Usage:
 ~~~
