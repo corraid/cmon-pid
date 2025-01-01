@@ -1,3 +1,6 @@
 *.user
+*.csv
+/src/images
 /src/x64
 /src/.vs
+/Kst2
