@@ -25,7 +25,7 @@
   <body>
 
       <h1 id="pid">cmon-pid</h1>
-      <p id="pragma-line-2">A implementation of several common PID controller transfer functions in C++, header only, without dependencies.</p>
+      <p id="pragma-line-2">A PID controller implementation with several common transfer functions in C++, header only, without dependencies.</p>
       <ul id="pragma-line-4">
           <li id="pragma-line-4">
               <p id="pragma-line-4">Realized PID transfer functions</p>
@@ -55,11 +55,14 @@
               <ul id="pragma-line-19">
                   <li id="pragma-line-19">Steady State</li>
                   <li id="pragma-line-20">Bump-less parameter change</li>
-                  <li id="pragma-line-21">Sampling pointss</li>
+                  <li id="pragma-line-21">Sampling points</li>
               </ul>
           </li>
           <li id="pragma-line-23">
               <p id="pragma-line-23"><a href="index.html#Simulation">Simulation</a> of a pid in closed loop with a second order test system</p>
+          </li>
+          <li>
+              <a href="https://github.com/corraid/cmon-pid">Source code is on GitHub.</a>
           </li>
       </ul>
 
@@ -232,23 +235,23 @@
       <h3>Fast Sampling</h3>
       The sampling time and filter time constant are a 10th of the closed loop response time. `Tf=0.1, h=0.1`. With
       ample sampling rate and bandwidth the performance of the discrete and continuous controllers are similar.
-      <p><img src="images/sim_fast_sample.png" width=100%></p>
+      <p><img src="images/sim_fast_sample.png" alt="Step response with fast sampling rate"></p>
       <h3>Slow Sampling</h3>
       With a sampling rate of half the closed loop response time we see some difference between the backward Euler
       and bilinear/tustin integration. `h=0.5`
-      <p><img src="images/sim_slow_sample.png" width=100%></p>
+      <p><img src="images/sim_slow_sample.png" alt="Step response with slow sampling rate"></p>
 
       <h3>High bandwidth</h3>
       This happens when the sampling rate is too low for the bandwidth. `h=0.1, Tf=0.0001`
-      <p><img src="images/sim_high_bandwidth.png" width=100%></p>
+      <p><img src="images/sim_high_bandwidth.png" alt="Sampling rate too low for the bandwidth"></p>
 
       <h3>Low Bandwidth</h3>
       A low pass filter of half the response time has not much effect on the performance but can reduce the kick. `Tf=0.5`
-      <p><img src="images/sim_low_bandwidth.png" width=100%></p>
+      <p><img src="images/sim_low_bandwidth.png" alt="Step response with low bandwidth"></p>
 
       <h3>Disturbance Rejection</h3>
       Disturbance rejection is slow but they are damped by the system and may not be problem under normal conditions. `Tf=0.1`
-      <p><img src="images/sim_disturbance_rejection.png" width=100%></p>
+      <p><img src="images/sim_disturbance_rejection.png", alt="Constant setpoint with unity disturbance"></p>
 
       <h3 id="SimClamping">Clamping</h3>
       <p>
@@ -259,26 +262,26 @@
           While this works reasonably well manipulating the output is akin to disturbance and if we have a system with
           slow disturbance rejection like this recovery times will be quite long.
       </p>
-      <p><img src="images/sim_clamping.png" width=100%></p>
+      <p><img src="images/sim_clamping.png" alt="Clamped step response"></p>
 
       <h3 id="SimBackcalc">Back-calculation</h3>
       <p>
           Back-calculation limits the output value like clamping but can be tuned with a parameter, here `Tw=Ti`. But it has
           the same problem with slow disturbance rejection.
       </p>
-      <p><img src="images/sim_backcalc_ti.png" width=100%></p>
+      <p><img src="images/sim_backcalc_ti.png" alt="Clipped step response with back-calculation"></p>
       <h3>Disturbance with `Ti=2`</h3>
       To improve the disturbance rejection the integration time can be reduced to 2.
-      <p><img src="images/sim_Ti2_disturbance.png" width=100%></p>
+      <p><img src="images/sim_Ti2_disturbance.png" alt="Constant setpoint with unity disturbance and reduced integration time"></p>
 
       <h3>Clamping with `Ti=2`</h3>
       This also improves the recovery after the output has been clamped.
-      <p><img src="images/sim_Ti2_clamping.png" width=100%></p>
+      <p><img src="images/sim_Ti2_clamping.png" alt="Clampling with reduced integration time"></p>
 
 
       <h3>Step response with `Ti=2`</h3>
       Tracking performance is reduced though.
-      <p><img src="images/sim_Ti2.png" width=100%></p>
+      <p><img src="images/sim_Ti2.png" alt="Step response with reduce integration time"></p>
 
   </body>
 </html>
